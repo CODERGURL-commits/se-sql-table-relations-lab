@@ -117,13 +117,4 @@ df_under_20 = pd.read_sql("""
     )
 """, conn)
 
-print("--- Boston Employees ---")
-print(df_boston.head())
-
-print("\n--- Customers with No Orders (Should be 24) ---")
-print(len(df_contacts))
-
-print("\n--- Top Selling Products ---")
-print(df_product_sold.head())
-
 conn.close()
