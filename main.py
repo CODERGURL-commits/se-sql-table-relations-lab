@@ -10,21 +10,18 @@ conn = sqlite3.connect('data.sqlite')
 pd.read_sql("""SELECT * FROM sqlite_master""", conn)
 
 # STEP 1
-# Replace None with your code
 df_boston = pd.read_sql("""
-    SELECT e.firstName, e.lastName, e.jobTitle
-    FROM employees e
-    JOIN offices o ON e.officeCode = o.officeCode
-    WHERE o.city = 'Boston'
+    SELECT firstName, lastName, jobTitle
+    FROM employees
+    INNER JOIN offices USING (officeCode)
+    WHERE city = 'Boston'
 """, conn)
 
 # STEP 2
-# Replace None with your code
 df_zero_emp = pd.read_sql("""
-    SELECT o.city, o.officeCode
-    FROM offices o
-    LEFT JOIN employees e ON o.officeCode = e.officeCode
-    WHERE e.employeeNumber IS NULL
+    SELECT city, officeCode
+    FROM offices
+    WHERE officeCode NOT IN (SELECT DISTINCT officeCode FROM employees)
 """, conn)
 
 # STEP 3
@@ -97,16 +94,21 @@ df_customers = pd.read_sql("""
     GROUP BY o.officeCode
 """, conn)
 
+
 # STEP 10
-# Replace None with your code
 df_under_20 = pd.read_sql("""
-    SELECT DISTINCT e.employeeNumber, e.firstName, e.lastName, o.city, e.officeCode
+    SELECT DISTINCT 
+        e.employeeNumber, 
+        e.firstName, 
+        e.lastName, 
+        o.city, 
+        o.officeCode
     FROM employees e
-    JOIN offices o ON e.officeCode = o.officeCode
+    JOIN offices o USING (officeCode)
     JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber
-    JOIN orders ord ON c.customerNumber = ord.customerNumber
-    JOIN orderdetails od ON ord.orderNumber = od.orderNumber
-    WHERE od.productCode IN (
+    JOIN orders USING (customerNumber)
+    JOIN orderdetails USING (orderNumber)
+    WHERE productCode IN (
         SELECT productCode
         FROM orderdetails
         JOIN orders USING (orderNumber)
