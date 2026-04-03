@@ -13,37 +13,35 @@ pd.read_sql("""SELECT * FROM sqlite_master""", conn)
 # Replace None with your code
 df_boston = pd.read_sql("""
     SELECT e.firstName, e.lastName, e.jobTitle
-    FROM Employees e
-    JOIN Offices o ON e.officeCode = o.officeCode
+    FROM employees e
+    JOIN offices o ON e.officeCode = o.officeCode
     WHERE o.city = 'Boston'
-    """, conn)
+""", conn)
 
 # STEP 2
 # Replace None with your code
 df_zero_emp = pd.read_sql("""
-    SELECT o.officeCode, o.city
-    FROM Offices o
-    LEFT JOIN Employees e ON o.officeCode = e.officeCode
-    WHERE e.officeCode IS NULL
-    """, conn)
+    SELECT o.city, o.officeCode
+    FROM offices o
+    LEFT JOIN employees e ON o.officeCode = e.officeCode
+    WHERE e.employeeNumber IS NULL
+""", conn)
 
 # STEP 3
-# Replace None with your code
 df_employee = pd.read_sql("""
-    SELECT *
-    FROM Employees e
-    LEFT JOIN Offices o ON e.officeCode = o.officeCode
+    SELECT e.firstName, e.lastName, o.city, o.state
+    FROM employees e
+    LEFT JOIN offices o ON e.officeCode = o.officeCode
     ORDER BY e.firstName, e.lastName
-    """, conn)
-
+""", conn)
 # STEP 4
 # Replace None with your code
 df_contacts = pd.read_sql("""
-     SELECT c.contactFirstName, c.contactLastName, c.phone, c.salesRepEmployeeNumber
-     FROM Customers c
-     LEFT JOIN orders o ON c.customerNumber = o.customerNumber
-     WHERE o.orderNumber IS NULL
-     ORDER BY c.contactLastName                          
+    SELECT c.contactFirstName, c.contactLastName, c.phone, c.salesRepEmployeeNumber
+    FROM customers c
+    LEFT JOIN orders o ON c.customerNumber = o.customerNumber
+    WHERE o.orderNumber IS NULL
+    ORDER BY c.contactLastName
 """, conn)
 
 # STEP 5
@@ -102,18 +100,18 @@ df_customers = pd.read_sql("""
 # STEP 10
 # Replace None with your code
 df_under_20 = pd.read_sql("""
-    SELECT DISTINCT e.employeeNumber, e.firstName, e.lastName, o.city, o.officeCode
+    SELECT DISTINCT e.employeeNumber, e.firstName, e.lastName, o.city, e.officeCode
     FROM employees e
     JOIN offices o ON e.officeCode = o.officeCode
     JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber
     JOIN orders ord ON c.customerNumber = ord.customerNumber
     JOIN orderdetails od ON ord.orderNumber = od.orderNumber
     WHERE od.productCode IN (
-        SELECT od2.productCode
-        FROM orderdetails od2
-        JOIN orders ord2 ON od2.orderNumber = ord2.orderNumber
-        GROUP BY od2.productCode
-        HAVING COUNT(DISTINCT ord2.customerNumber) < 20
+        SELECT productCode
+        FROM orderdetails
+        JOIN orders USING (orderNumber)
+        GROUP BY productCode
+        HAVING COUNT(DISTINCT customerNumber) < 20
     )
 """, conn)
 
